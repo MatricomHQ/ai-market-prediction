@@ -99,7 +99,7 @@ def process_expiration(expiration):
         :param previous_row:  The previous row of data
         :return:  The new row of data if the data has changed, otherwise, it returns None
         """
-        
+
         # explicitly casting _new_row.pcr to a bool lets us check the truthy for None and 0
         if previous_row == _new_row or not bool(_new_row.pcr):
             logging.info("The data hasn't changed")

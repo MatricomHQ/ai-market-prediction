@@ -121,7 +121,7 @@ expirations_params = {
 }
 
 headers = {
-    'Authorization': 'Bearer EV6ZirBBeJU9Hoh7UfWlNPvZiA3h',
+    'Authorization': f'Bearer {Config.token}',
     'Accept': 'application/json'
 }
 

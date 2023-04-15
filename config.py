@@ -14,3 +14,4 @@ class Config:
     quote_endpoint = os.getenv('QUOTE_ENDPOINT')
     symbol = os.getenv('SYMBOL')
     vix_symbol = os.getenv('VIX_SYMBOL')
+    token = os.getenv('TOKEN')

@@ -5,7 +5,7 @@ import pandas as pd
 import time
 import concurrent.futures
 from config import Config
-from schema import OptionChainsResponse, OptionChain, QuoteResponse, RowData, ExpirationsResponse
+from app.data.schema import OptionChainsResponse, OptionChain, QuoteResponse, RowData, ExpirationsResponse
 import logging
 
 logging.basicConfig(

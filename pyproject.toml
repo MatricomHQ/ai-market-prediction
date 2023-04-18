@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "ai-market-prediction"
+version = "0.1.0"
+description = ""
+authors = ["Michael Brown <kurosama112@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+polygon-api-client = "^1.8.5"
+python-dotenv = "^1.0.0"
+SQLAlchemy = "^2.0.9"
+sqlalchemy-mixins = "^2.0.0"
+pytz = "^2023.3"
+alembic = "^1.10.3"
+fastapi = "^0.95.1"
+FastAPI-SQLAlchemy = "^0.2.1"
+psycopg2-binary = "^2.9.6"
+py-linq = "^1.4.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

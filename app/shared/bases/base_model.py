@@ -1,26 +1,17 @@
-from datetime import datetime
-import uuid
-from typing import Optional
-
 from logging import getLogger
-import pytz
-from sqlalchemy import Column, Boolean, Text, ForeignKey, DateTime, Integer, Float
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import registry, declarative_base
-from sqlalchemy_mixins.activerecord import ActiveRecordMixin
-from sqlalchemy_mixins.inspection import InspectionMixin
-from sqlalchemy_mixins.smartquery import SmartQueryMixin
+from sqlalchemy_mixins import AllFeaturesMixin
+from typing import TypeVar
 
-mapper_registry = registry()
-DeclarativeBase = declarative_base()
-Base = mapper_registry.generate_base(
-    cls=(DeclarativeBase, ActiveRecordMixin, SmartQueryMixin, InspectionMixin)
-)
+Base = declarative_base()
 
-logger = getLogger(__name__)
+ModelType = TypeVar('ModelType', bound=Base)
 
-@mapper_registry.mapped
-class ModelMixin(Base):
+
+logger = getLogger('app')
+
+
+class ModelMixin(AllFeaturesMixin):
     """
     Generic Mixin Model to provide CRUD functions that all Model classes need
     """
@@ -28,7 +19,7 @@ class ModelMixin(Base):
     __abstract__ = True
 
     @classmethod
-    def create(cls, *_, **kwargs) -> 'Base':
+    def create(cls, *_, **kwargs) -> ModelType:
         """
         This function creates a new instance of a class, adds it to a session, commits the changes, and returns the instance.
 
@@ -37,12 +28,17 @@ class ModelMixin(Base):
         :return: an instance of the class `Base` that was created with the provided `kwargs` arguments.
         """
         data = cls(**kwargs)
-        cls.session.add(data)
-        cls.session.commit()
-        return data
+        try:
+            cls.session.add(data)
+            cls.session.commit()
+            return data
+        except Exception as e:
+            logger.error(e)
+            cls.session.rollback()
+
 
     @classmethod
-    def update(cls, *_, **kwargs) -> 'Base':
+    def update(cls, *_, **kwargs) -> ModelType:
         """
         This function updates an object in a database and returns the updated object.
 
@@ -51,14 +47,19 @@ class ModelMixin(Base):
         it is used to access the database session and query the database for objects of the class
         :return: The method is returning the updated object with the specified `id`.
         """
-        object_id = kwargs.pop("id")
-        _object = cls.where(id=object_id)
-        _object.update(kwargs)
-        cls.session.commit()
-        return _object.first()
+        try:
+            object_id = kwargs.pop("id")
+            _object = cls.where(id=object_id)
+            _object.update(kwargs)
+            cls.session.commit()
+            return _object.first()
+        except Exception as e:
+            logger.error(e)
+            cls.session.rollback()
+
 
     @classmethod
-    def remove(cls, *_, **kwargs) -> int:
+    def delete(cls, *_, **kwargs) -> bool:
         """
         This function removes an object from a class based on its ID.
 
@@ -70,13 +71,14 @@ class ModelMixin(Base):
         object_id = kwargs.pop("id")
         try:
             cls.where(id=object_id).delete()
+            return True
         except Exception as e:
             logger.info(e)
             cls.session.rollback()
-        return object_id
+
 
     @classmethod
-    def read(cls, *_, **kwargs) -> 'Base':
+    def read(cls, *_, **kwargs) -> ModelType:
         """
         This function reads and returns the first instance of a class that
         matches the given keyword arguments.
@@ -104,20 +106,3 @@ class ModelMixin(Base):
         the `all()` method to retrieve all the instances.
         """
         return cls.where().all()
-
-
-class History(ModelMixin):
-    """
-    This class represents the `history` table in the database.
-    """
-    __tablename__ = "history"
-    id = Column(Integer, autoincrement=True, primary_key=True, default=uuid.uuid4, index=True)
-    timestamp = Column(DateTime, nullable=False, index=True, default=lambda: datetime.now(pytz.utc))
-    spy_price = Column(Float, nullable=False)
-    vix = Column(Float, nullable=False)
-    expiration = Column(DateTime, nullable=False)
-    pcr = Column(Float, nullable=False)
-    put_notional = Column(Float, nullable=False)
-    call_notional = Column(Float, nullable=False)
-
-
